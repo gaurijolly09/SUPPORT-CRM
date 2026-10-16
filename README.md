@@ -1,238 +1,183 @@
-# Support CRM – Customer Support Management System
+# Support CRM — Customer Support Ticket Management System
 
-A full-stack, lightweight Customer Relationship and Support Management System built with **Python**, **FastAPI**, **SQLAlchemy**, **SQLite**, and a responsive **Vanilla HTML/CSS/JavaScript** frontend.
+Support CRM is a web-based customer support ticket management system built using Python and FastAPI. It helps customers raise and manage support tickets while allowing support agents to handle customer requests, update ticket status, and assign tickets to agents.
 
-The application implements secure role-based access control, allowing **Customers** to register, authenticate with JWT, submit support requests, and track their tickets in total privacy, while **Agents** and **Admins** manage tickets, assign issues, log communications, and inspect analytics.
+The project focuses on REST API development, database management, authentication, and role-based access control.
 
----
+## Features
 
-## 📋 Features
+- **Authentication:** Separate registration and login for customers and agents.
+- **JWT Authorization:** Token-based authentication for protected endpoints.
+- **Customer Management:** Create, view, update, and manage customer profiles.
+- **Ticket Management:** Create, retrieve, update, and delete support tickets.
+- **Ticket Assignment:** Assign tickets to support agents.
+- **Status and Priority Management:** Track tickets according to their status and priority.
+- **Role-Based Access Control:** Customers can access their own profiles and tickets, while agents can manage tickets across customers.
+- **Pagination and Filtering:** Retrieve tickets in manageable batches and filter them by status or priority.
+- **API Documentation:** Explore and test endpoints through FastAPI's interactive Swagger UI.
 
-* **Customer Registration**: New customers can self-register with Name, Email, Phone, Company, and securely hashed passwords.
-* **Customer Login**: Secure JWT-based authentication verifying hashed credentials.
-* **JWT Authentication**: Token-based authentication using HS256 algorithm and bcrypt password hashing.
-* **Agent Authentication**: Support staff login for handling customer inquiries.
-* **Admin Authentication**: Administrative access to workload reports and system statistics.
-* **Customer-Specific Tickets**: Automatic association with the authenticated customer; Customers only see their own tickets. Strict backend authorization prevents cross-customer data leakage.
-* **Ticket Management**: Create, view, update status (`open`, `in-progress`, `resolved`, `closed`), prioritize (`low`, `medium`, `high`, `urgent`), and assign agents.
-* **Customer Management**: Staff CRUD operations for managing client profiles and contact information.
-* **Communication Logs**: Record multi-channel interactions (`call`, `email`, `chat`) attached directly to tickets for complete activity tracking.
-* **Reports & Analytics**: Real-time summary counts by status, agent workload distribution, and average response times.
-* **Frontend Dashboard**: Clean, responsive, modern interface built in pure Vanilla HTML, CSS, and JavaScript using Fetch API.
+## Technology Stack
 
----
+| Technology | Purpose |
+|---|---|
+| Python | Backend development |
+| FastAPI | Building REST APIs |
+| SQLAlchemy | Database interaction using ORM |
+| SQLite | Persistent database storage |
+| Pydantic | Request validation and response schemas |
+| JWT | Authentication and token-based access |
+| Passlib and bcrypt | Password hashing and verification |
+| HTML, CSS, JavaScript | Frontend development |
 
-## 🛠 Technologies
+## Application Architecture
 
-* **Python 3.8+**: Core programming language
-* **FastAPI**: Modern, fast ASGI web framework for RESTful APIs
-* **SQLAlchemy**: Python SQL toolkit and Object-Relational Mapper (ORM)
-* **SQLite**: Lightweight zero-configuration SQL database engine (`crm.db`)
-* **Pydantic**: Data validation and serialization
-* **JWT (python-jose & passlib)**: JSON Web Token generation and Bcrypt password hashing
-* **HTML5**: Semantic markup for client dashboards
-* **CSS3**: Responsive styling, custom design variables, status badges
-* **JavaScript (Vanilla ES6)**: Asynchronous API communication via native `fetch()`
+The application follows a modular structure that separates API routes, database operations, data models, validation, and authentication.
 
----
+- **FastAPI** handles incoming HTTP requests and returns API responses.
+- **Routers** organize endpoints for authentication, customers, and tickets.
+- **SQLAlchemy** manages communication between the backend and database.
+- **Pydantic schemas** validate incoming request data and define response formats.
+- **JWT authentication** identifies users accessing protected endpoints.
+- **SQLite** stores customer, user, and ticket information.
 
-## 🗂 Project Structure
+## User Roles
+
+### Customer
+
+Customers can register, log in, manage their profiles, create support tickets, view their own tickets, and update their ticket details and status.
+
+### Agent
+
+Agents can log in, manage customer records, create tickets for customers, view and update tickets, assign tickets to agents, and filter tickets by status and priority.
+
+## Project Structure
 
 ```text
-support-crm/
+Support-CRM/
 ├── app/
-│   ├── __init__.py
-│   ├── main.py              # FastAPI app initialization, CORS & static frontend mount
-│   ├── database.py          # SQLAlchemy database engine and session dependency (get_db)
-│   ├── models.py            # SQLAlchemy ORM models (User, Customer, Ticket, Log)
-│   ├── schemas.py           # Pydantic models for validation and responses
-│   ├── auth.py              # Authentication router (User & Customer login/registration)
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── auth.py
 │   └── routers/
-│       ├── __init__.py
-│       ├── auth.py          # Re-exports auth router for consistency
-│       ├── customers.py     # Customer CRUD endpoints & self-service profile
-│       ├── tickets.py       # Ticket CRUD with customer ownership isolation
-│       ├── logs.py          # Communication log endpoints
-│       ├── reports.py       # Analytics and reporting endpoints
-│       └── utils.py         # Passwords, JWT generation, get_current_actor dependency
-│
+│       ├── utils.py
+│       ├── customers.py
+│       ├── tickets.py
+│       ├── logs.py
+│       └── reports.py
 ├── frontend/
-│   ├── index.html           # Landing page with portal entry points
-│   ├── login.html           # Unified sign-in (Customer tab & Staff tab)
-│   ├── register.html        # Customer registration page
-│   ├── css/
-│   │   └── style.css        # Clean, modern stylesheet
-│   ├── js/
-│   │   ├── api.js           # Central Fetch API client with automatic JWT headers
-│   │   ├── auth.js          # Client session management & role guards
-│   │   ├── customer.js      # Customer dashboard, ticket creation & conversation
-│   │   ├── agent.js         # Agent ticket queue, assignment & communication logging
-│   │   └── admin.js         # Admin reporting & workload analytics
-│   ├── customer/
-│   │   ├── dashboard.html   # Customer metrics & recent tickets
-│   │   ├── tickets.html     # My Tickets table with search & filters
-│   │   ├── create-ticket.html # Customer ticket creation form
-│   │   ├── ticket-detail.html # View ticket status & conversation history
-│   │   └── profile.html     # Manage customer contact details
-│   ├── agent/
-│   │   ├── dashboard.html   # Agent queue overview & metrics
-│   │   ├── tickets.html     # Full ticket queue with status/priority filtering
-│   │   ├── ticket-detail.html # Update status/priority, assign agent & add logs
-│   │   └── customers.html   # Directory of registered customers
-│   └── admin/
-│       └── dashboard.html   # Status summaries, workload distribution, response metrics
-│
-├── crm.db                   # SQLite database
-├── migrate_db.py            # Idempotent database schema migration script
-├── test_api.py              # Existing API integration tests
-├── test_customer_flow.py    # Customer authentication & ticket flow tests
-├── test_full_workflow.py    # End-to-end full system workflow test
-├── requirements.txt         # Project dependencies
-└── README.md                # Project documentation
+├── requirements.txt
+└── README.md
 ```
 
----
+### Main Components
 
-## 🚀 Setup & Installation
+- **main.py:** Initializes the FastAPI application, configures middleware, registers routers, and mounts frontend files.
+- **database.py:** Configures the SQLite database connection, SQLAlchemy engine, session factory, and database session dependency.
+- **models.py:** Defines database models, columns, relationships, and foreign keys.
+- **schemas.py:** Defines Pydantic schemas for request validation and API responses.
+- **auth.py:** Implements registration, login, and profile-related authentication endpoints.
+- **routers/utils.py:** Contains password hashing, JWT utilities, and authenticated-user identification.
+- **routers/customers.py:** Handles customer creation, retrieval, updates, and deletion.
+- **routers/tickets.py:** Handles ticket creation, retrieval, filtering, updates, assignment, and deletion.
 
-### 1. Clone the Repository
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/auth/register` | Register an agent account |
+| POST | `/auth/login` | Authenticate an agent |
+| POST | `/auth/customer/register` | Register a customer |
+| POST | `/auth/customer/login` | Authenticate a customer |
+| GET | `/auth/me` | Retrieve the authenticated agent's profile |
+| GET | `/auth/customer/me` | Retrieve the authenticated customer's profile |
+
+### Customer Management
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/customers/` | Create a customer profile |
+| GET | `/customers/` | Retrieve all customers |
+| GET | `/customers/{customer_id}` | Retrieve a customer by ID |
+| PUT | `/customers/{customer_id}` | Update a customer profile |
+| DELETE | `/customers/{customer_id}` | Delete a customer profile |
+
+### Ticket Management
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/tickets/` | Create a support ticket |
+| GET | `/tickets/` | Retrieve tickets with optional filters |
+| GET | `/tickets/{ticket_id}` | Retrieve a ticket by ID |
+| PUT | `/tickets/{ticket_id}` | Update a support ticket |
+| DELETE | `/tickets/{ticket_id}` | Delete a support ticket |
+
+Protected endpoints enforce authentication and access restrictions according to the application's authorization logic.
+
+## Database Design
+
+The application uses SQLAlchemy ORM with SQLite to store and manage structured data.
+
+- **User:** Stores agent account details, credentials, and role information.
+- **Customer:** Stores customer profile information.
+- **Ticket:** Stores ticket title, description, status, priority, creation date, customer association, and optional agent assignment.
+
+A customer can have multiple tickets. Each ticket is associated with a customer and can optionally be assigned to an agent.
+
+## Authentication and Security
+
+The application uses JWTs to authenticate users and protect API endpoints. Passwords are hashed before being stored in the database and verified during login.
+
+Role-based authorization and ownership checks help ensure that customers can access only their own profiles and tickets, while agents can manage tickets across customers.
+
+## Installation and Setup
+
+### 1. Clone the repository
+
 ```bash
-git clone https://github.com/wisdom-dosoo/support-crm.git
-cd "Support CRM 1"
+git clone <https://github.com/gaurijolly09/SUPPORT-CRM.git>
+cd Support-CRM
 ```
 
-### 2. Set Up Python Virtual Environment
+Replace `<YOUR_REPOSITORY_URL>` with your repository's Git URL.
+
+### 2. Create a virtual environment
+
 ```bash
-# On Windows
-python -m venv .venv
-.venv\Scripts\activate
-
-# On macOS/Linux
-python3 -m venv .venv
-source .venv/bin/activate
+python -m venv venv
 ```
 
-### 3. Install Dependencies
+Activate it on Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Run Database Migration
-Apply schema updates safely (adds `hashed_password` to `customers` if missing):
-```bash
-python migrate_db.py
-```
+### 4. Start the application
 
----
-
-## 🏃 Running the Application
-
-### 1. Start the Backend API Server
 ```bash
 uvicorn app.main:app --reload
 ```
-The FastAPI backend starts at:
-```text
-http://127.0.0.1:8000
-```
 
-### 2. Access the Frontend
+### 5. Access the API documentation
 
-You can access the frontend in either of two ways:
+Open the following URL in your browser:
 
-* **Directly through FastAPI (Recommended)**:
-  Open your web browser and navigate to:
-  ```text
-  http://127.0.0.1:8000/frontend/
-  ```
+`http://127.0.0.1:8000/docs`
 
-* **Or open `frontend/index.html`**:
-  Open `frontend/index.html` directly in any web browser or use VSCode Live Server. The built-in `api.js` client automatically connects to `http://127.0.0.1:8000`.
+## Future Enhancements
 
----
-
-## 📚 API Documentation
-
-FastAPI provides built-in interactive API documentation:
-* **Interactive Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-* **ReDoc Alternative**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
-
----
-
-## 🔐 Authentication System
-
-The application features a dual-entity JWT authentication mechanism:
-
-### 1. Customer Authentication
-* **Registration**: `POST /auth/customer/register`
-  * Accepts: `name`, `email`, `password`, `phone`, `company`, `notes`.
-  * Hashes password using `bcrypt`.
-* **Login**: `POST /auth/customer/login`
-  * Accepts: `email`, `password`.
-  * Returns: JWT bearer token containing `{"sub": email, "role": "customer", "customer_id": id}`.
-* **Profile**: `GET /auth/customer/me`
-
-### 2. Staff (Agent / Admin) Authentication
-* **Registration**: `POST /auth/register`
-* **Login**: `POST /auth/login` (OAuth2 password request form)
-  * Accepts: `username`, `password`.
-  * Returns: JWT bearer token containing `{"sub": username}`.
-* **Profile**: `GET /auth/me`
-
-### 3. Role & Ownership Enforcement (`get_current_actor`)
-The backend inspects the JWT payload on every request:
-* **Customer Isolation**: When a customer calls `GET /tickets/`, the query filters strictly by `customer_id == current_customer.id`. Direct requests like `GET /tickets/5` verify ownership and return `403 Forbidden` if the ticket belongs to another customer.
-* **Staff Access**: Agents and Admins have global visibility to view all tickets, reassign agents, modify ticket statuses, and review analytics.
-
----
-
-## 🎫 Complete Ticket Workflow
-
-```text
-1. Customer Registration / Login
-   └── Customer signs in and receives JWT token.
-
-2. Customer Submits Support Ticket
-   └── Customer enters Title, Description, and Priority (Low, Medium, High, Urgent).
-   └── The backend automatically populates `customer_id` from the JWT session.
-   └── Customer cannot manually assign agents or spoof customer_id.
-
-3. Agent Reviews Queue
-   └── Agent logs in to the Agent Workspace.
-   └── Agent sees the new ticket in the queue.
-   └── Agent can click "Assign to Me" or update status to "In Progress".
-
-4. Communication & Updates
-   └── Agent logs communication notes (Call, Email, Chat).
-   └── Customer views ticket details and sees updated status and messages.
-   └── Customer can reply directly on their ticket timeline.
-
-5. Ticket Resolution
-   └── Agent marks ticket status as "Resolved".
-   └── Customer sees "Resolved" badge on their dashboard.
-```
-
----
-
-## 🧪 Testing
-
-The repository contains automated test suites covering customer authentication, data isolation, and existing staff APIs:
-
-```bash
-# Run all tests
-pytest
-
-# Or run individual test suites
-pytest test_api.py
-pytest test_customer_flow.py
-pytest test_full_workflow.py
-```
-
-### Verified Test Cases:
-1. **Customer Registration**: Validates password hashing and record creation.
-2. **Customer Login**: Verifies credentials and JWT token issuance.
-3. **Customer Ticket Creation**: Validates automatic customer linkage and default open status.
-4. **Customer Authorization**: Validates that Customer A cannot view or tamper with Customer B's tickets (HTTP 403).
-5. **Agent Operations**: Verifies that agents can view tickets across all customers, assign tickets, and update status.
-6. **Customer Visibility**: Confirms that customers immediately observe status changes made by agents.
-7. **Existing APIs**: Confirms full backwards compatibility for User CRUD, Customer CRUD, Logs, and Reports.
+- Add automated unit and integration tests.
+- Improve validation and error handling.
+- Strengthen production security and secret management.
+- Add advanced ticket search and reporting capabilities.
+- Deploy the application in a production environment.
